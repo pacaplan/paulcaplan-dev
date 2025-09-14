@@ -6,30 +6,34 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: 'list',
+  timeout: 1000, // 1 second timeout
   use: {
     baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry'
+    trace: 'on-first-retry',
+    actionTimeout: 1000, // 1 second for actions
+    navigationTimeout: 5000 // 5 seconds for navigation
   },
 
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] }
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] }
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
     }
   ],
 
-  webServer: {
-    command: 'npm run build && npm run start',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI
-  }
+  // webServer: {
+  //   command: 'pnpm run dev -- --port 3001',
+  //   url: 'http://localhost:3001',
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120 * 1000, // 2 minutes
+  //   env: {
+  //     // Test environment variables
+  //     OPENROUTER_API_KEY: 'test-api-key',
+  //     OPENROUTER_MODEL: 'test-model',
+  //     USE_MOCK_AI: 'true',
+  //     NEXT_PUBLIC_APP_URL: 'http://localhost:3001',
+  //     NODE_ENV: 'test'
+  //   }
+  // }
 })

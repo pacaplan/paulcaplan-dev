@@ -1,25 +1,64 @@
 'use client'
 
-// import { useChat } from 'ai/react' // Removed for testing
 import { useState } from 'react'
 import ErrorBoundary, { ChatErrorFallback } from '@/components/ErrorBoundary'
 
-export default function ChatPage () {
-  const [isLoading, setIsLoading] = useState(false)
-  const [input, setInput] = useState('')
+interface Message {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+}
 
-  // Mock chat functionality for testing
-  const messages: any[] = []
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value)
-  }
-  const handleSubmit = async () => {}
-  const chatLoading = false
+export default function ChatPage () {
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!input.trim() || isLoading) return
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input.trim()
+    }
+
+    setMessages(prev => [...prev, userMessage])
+    setInput('')
     setIsLoading(true)
+
     try {
-      await handleSubmit()
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: [...messages, userMessage]
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.choices[0].message.content
+      }
+
+      setMessages(prev => [...prev, assistantMessage])
+    } catch (error) {
+      console.error('Chat error:', error)
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Sorry, there was an error processing your message. Please try again.'
+      }
+      setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }
@@ -81,7 +120,7 @@ export default function ChatPage () {
                 </div>
               ))}
 
-              {(chatLoading || isLoading) && (
+              {isLoading && (
                 <div className='flex justify-start'>
                   <div className='bg-gray-200 text-gray-900 rounded-lg px-4 py-2'>
                     <div className='flex items-center space-x-2'>
@@ -102,17 +141,17 @@ export default function ChatPage () {
               <form onSubmit={handleFormSubmit} className='flex gap-2'>
                 <input
                   value={input}
-                  onChange={handleInputChange}
+                  onChange={(e) => setInput(e.target.value)}
                   placeholder='Type your message here...'
                   className='flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                  disabled={chatLoading || isLoading}
+                  disabled={isLoading}
                 />
                 <button
                   type='submit'
-                  disabled={chatLoading || isLoading || !input.trim()}
+                  disabled={isLoading || !input.trim()}
                   className='bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors'
                 >
-                  {chatLoading || isLoading ? 'Sending...' : 'Send'}
+                  {isLoading ? 'Sending...' : 'Send'}
                 </button>
               </form>
 

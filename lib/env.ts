@@ -6,6 +6,9 @@ const envSchema = z.object({
   OPENROUTER_API_KEY: z.string().min(1, 'OpenRouter API key is required'),
   OPENROUTER_MODEL: z.string().min(1, 'OpenRouter model is required'),
 
+  // Mock AI configuration
+  USE_MOCK_AI: z.string().transform(val => val === 'true').default('false'),
+
   // Optional: Add more environment variables as needed
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   NEXT_PUBLIC_APP_URL: z.string().url().optional()
@@ -25,6 +28,7 @@ function validateEnv () {
         return {
           OPENROUTER_API_KEY: 'build-time-default',
           OPENROUTER_MODEL: 'gpt-4',
+          USE_MOCK_AI: false,
           NODE_ENV: 'production' as const
         }
       }

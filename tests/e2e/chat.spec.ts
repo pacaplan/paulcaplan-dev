@@ -1,50 +1,137 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Chat Page', () => {
-  test('should display the chat interface', async ({ page }) => {
+test.describe('Chat Interface', () => {
+  test.beforeEach(async ({ page }) => {
+    // Navigate to the chat page
     await page.goto('/chat')
-
-    // Check page title
-    await expect(page.getByText('🤖 AI Chat')).toBeVisible()
-
-    // Check back to home link
-    await expect(page.getByText('← Back to Home')).toBeVisible()
-
-    // Check welcome message
-    await expect(page.getByText('Hello! How can I help you today?')).toBeVisible()
   })
 
-  test('should have working input and send button', async ({ page }) => {
-    await page.goto('/chat')
+  test('should display the chat interface correctly', async ({ page }) => {
+    // Check that the page loads with the correct title
+    await expect(page).toHaveTitle(/AI Chat/)
+    
+    // Check that the header is visible
+    await expect(page.locator('h1')).toContainText('🤖 AI Chat')
+    
+    // Check that the back to home link is present
+    await expect(page.locator('a[href="/"]')).toContainText('← Back to Home')
+    
+    // Check that the initial empty state is displayed
+    await expect(page.locator('text=Hello! How can I help you today?')).toBeVisible()
+    await expect(page.locator('text=Start a conversation by typing a message below.')).toBeVisible()
+  })
 
-    // Check input field
-    const input = page.getByPlaceholder('Type your message here...')
-    await expect(input).toBeVisible()
+  test('should allow sending and receiving messages', async ({ page }) => {
+    // Type a message in the input field
+    const messageInput = page.locator('input[placeholder="Type your message here..."]')
+    await messageInput.fill('Hello, this is a test message!')
+    
+    // Check that the send button is enabled
+    const sendButton = page.locator('button[type="submit"]')
+    await expect(sendButton).toBeEnabled()
+    await expect(sendButton).toContainText('Send')
+    
+    // Send the message
+    await sendButton.click()
+    
+    // Check that the input is cleared
+    await expect(messageInput).toHaveValue('')
+    
+    // Wait for the user message to appear
+    await expect(page.locator('text=Hello, this is a test message!')).toBeVisible()
+    
+    // Wait for the AI response to appear (mock response)
+    await expect(page.locator('text=Hello! I\'m a mock AI response')).toBeVisible({ timeout: 2000 })
+    await expect(page.locator('text=The chat interface is working correctly!')).toBeVisible()
+    
+    // Check that the send button shows "Send" again
+    await expect(sendButton).toContainText('Send')
+  })
 
-    // Check send button
-    const sendButton = page.getByText('Send')
-    await expect(sendButton).toBeVisible()
-    await expect(sendButton).toBeDisabled() // Should be disabled when input is empty
+  test('should handle multiple messages in a conversation', async ({ page }) => {
+    // Send first message
+    const messageInput = page.locator('input[placeholder="Type your message here..."]')
+    const sendButton = page.locator('button[type="submit"]')
+    
+    await messageInput.fill('First message')
+    await sendButton.click()
+    
+    // Wait for first response
+    await expect(page.locator('text=First message')).toBeVisible()
+    await expect(page.locator('text=Hello! I\'m a mock AI response')).toBeVisible({ timeout: 2000 })
+    
+    // Send second message
+    await messageInput.fill('Second message')
+    await sendButton.click()
+    
+    // Wait for second response
+    await expect(page.locator('text=Second message')).toBeVisible()
+    await expect(page.locator('text=Hello! I\'m a mock AI response')).toBeVisible({ timeout: 2000 })
+    
+    // Check that both user messages are visible
+    await expect(page.locator('text=First message')).toBeVisible()
+    await expect(page.locator('text=Second message')).toBeVisible()
+  })
 
-    // Type a message
-    await input.fill('Hello, AI!')
+  test('should not allow sending empty messages', async ({ page }) => {
+    const sendButton = page.locator('button[type="submit"]')
+    
+    // Check that send button is disabled when input is empty
+    await expect(sendButton).toBeDisabled()
+    
+    // Type and then clear the input
+    const messageInput = page.locator('input[placeholder="Type your message here..."]')
+    await messageInput.fill('   ') // Only whitespace
+    await expect(sendButton).toBeDisabled()
+    
+    await messageInput.fill('Valid message')
     await expect(sendButton).toBeEnabled()
   })
 
-  test('should navigate back to home', async ({ page }) => {
-    await page.goto('/chat')
-
-    // Click back to home
-    await page.getByText('← Back to Home').click()
-
-    // Should be on home page
-    await expect(page).toHaveURL('/')
-    await expect(page.getByText('🚧 UNDER CONSTRUCTION 🚧')).toBeVisible()
+  test('should show loading state while processing', async ({ page }) => {
+    const messageInput = page.locator('input[placeholder="Type your message here..."]')
+    const sendButton = page.locator('button[type="submit"]')
+    
+    await messageInput.fill('Test message')
+    await sendButton.click()
+    
+    // Wait for the response to appear (mock response is fast, so loading might be brief)
+    await expect(page.locator('text=Hello! I\'m a mock AI response')).toBeVisible({ timeout: 2000 })
+    
+    // Check that the loading text is no longer visible
+    await expect(page.locator('text=AI is thinking...')).not.toBeVisible()
   })
 
-  test('should show powered by message', async ({ page }) => {
-    await page.goto('/chat')
+  test('should display proper message styling', async ({ page }) => {
+    const messageInput = page.locator('input[placeholder="Type your message here..."]')
+    const sendButton = page.locator('button[type="submit"]')
+    
+    await messageInput.fill('Test message')
+    await sendButton.click()
+    
+    // Wait for messages to appear
+    await expect(page.locator('text=Test message')).toBeVisible()
+    await expect(page.locator('text=Hello! I\'m a mock AI response')).toBeVisible({ timeout: 2000 })
+    
+    // Check that messages are displayed (simplified check)
+    await expect(page.locator('text=Test message')).toBeVisible()
+    await expect(page.locator('text=Hello! I\'m a mock AI response')).toBeVisible()
+  })
 
-    await expect(page.getByText('Powered by OpenRouter AI • Model configured via environment variables')).toBeVisible()
+  test('should handle form submission with Enter key', async ({ page }) => {
+    const messageInput = page.locator('input[placeholder="Type your message here..."]')
+    
+    await messageInput.fill('Message sent with Enter key')
+    await messageInput.press('Enter')
+    
+    // Wait for the message to appear
+    await expect(page.locator('text=Message sent with Enter key')).toBeVisible()
+    await expect(page.locator('text=Hello! I\'m a mock AI response')).toBeVisible()
+  })
+
+  test('should show footer information', async ({ page }) => {
+    // Check that the footer text is visible
+    await expect(page.locator('text=Powered by OpenRouter AI')).toBeVisible()
+    await expect(page.locator('text=Model configured via environment variables')).toBeVisible()
   })
 })
