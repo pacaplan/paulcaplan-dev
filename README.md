@@ -17,7 +17,7 @@ A modern Next.js starter project with AI chat capabilities, featuring a nostalgi
 ### Prerequisites
 
 - Node.js 18+ 
-- npm or yarn
+- pnpm (recommended) or npm
 - OpenRouter.ai API key
 
 ### Installation
@@ -30,7 +30,7 @@ A modern Next.js starter project with AI chat capabilities, featuring a nostalgi
 
 2. **Install dependencies**
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Set up environment variables**
@@ -51,7 +51,7 @@ A modern Next.js starter project with AI chat capabilities, featuring a nostalgi
 
 5. **Run the development server**
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 6. **Open your browser**
@@ -83,38 +83,38 @@ A modern Next.js starter project with AI chat capabilities, featuring a nostalgi
 ### Unit Tests (Vitest)
 ```bash
 # Run unit tests
-npm run test
+pnpm test
 
 # Run tests in watch mode
-npm run test:ui
+pnpm test:ui
 
 # Run tests once
-npm run test:run
+pnpm test:run
 ```
 
 ### E2E Tests (Playwright)
 ```bash
 # Run E2E tests
-npm run test:e2e
+pnpm test:e2e
 
 # Run E2E tests with UI
-npm run test:e2e:ui
+pnpm test:e2e:ui
 
 # Run E2E tests in headed mode
-npm run test:e2e:headed
+pnpm test:e2e:headed
 ```
 
 ## 🔧 Available Scripts
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run StandardJS linter |
-| `npm run lint:fix` | Fix linting issues |
-| `npm run test` | Run unit tests |
-| `npm run test:e2e` | Run E2E tests |
+| `pnpm dev` | Start development server |
+| `pnpm build` | Build for production |
+| `pnpm start` | Start production server |
+| `pnpm lint` | Run StandardJS linter |
+| `pnpm lint:fix` | Fix linting issues |
+| `pnpm test` | Run unit tests |
+| `pnpm test:e2e` | Run E2E tests |
 
 ## 🌐 Environment Variables
 

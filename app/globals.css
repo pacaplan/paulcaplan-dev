@@ -29,10 +29,29 @@ body {
   100% { color: #ff0000; }
 }
 
+@keyframes construction-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-10px) rotate(-2deg); }
+  75% { transform: translateY(-5px) rotate(2deg); }
+}
+
+@keyframes warning-flash {
+  0%, 100% { background-color: #fbbf24; }
+  50% { background-color: #f59e0b; }
+}
+
 .rainbow-text {
   animation: rainbow 2s linear infinite;
 }
 
 .blink {
   animation: blink 1s infinite;
+}
+
+.construction-bounce {
+  animation: construction-bounce 2s ease-in-out infinite;
+}
+
+.warning-flash {
+  animation: warning-flash 1.5s ease-in-out infinite;
 }
